@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -19,6 +21,8 @@ public class myClientGui {
 	private Text ID;
 	private Text BetreuerBox;
 	private Text EinweisungBox;
+	
+	//final static GpioController gpio = GpioFactory.getInstance();
 
 	/**
 	 * Launch the application.
@@ -27,6 +31,8 @@ public class myClientGui {
 	 */
 	public static void main(String[] args) {
 		try {
+			Runtime.getRuntime().exec("sudo gpio mode 0 out");
+			Runtime.getRuntime().exec("sudo gpio write 0 0");
 			myClientGui window = new myClientGui();
 			window.open();
 		} catch (Exception e) {
@@ -96,15 +102,33 @@ public class myClientGui {
 						if (myuser.getEinweisung()) {
 							EinweisungBox.setText("Eingewiesen");
 							EinweisungBox.setBackground(mygreen);
+							try {
+								Runtime.getRuntime().exec("sudo gpio write 0 1");
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						} else {
 							EinweisungBox.setText("nicht eingewiesen");
 							EinweisungBox.setBackground(myred);
+							try {
+								Runtime.getRuntime().exec("sudo gpio write 0 0");
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 					} else {
 						EinweisungBox.setBackground(myred);
 						BetreuerBox.setBackground(myred);
 						EinweisungBox.setText("nicht eingewiesen");
 						BetreuerBox.setText("");
+						try {
+							Runtime.getRuntime().exec("sudo gpio write 0 0");
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				} else {
 					MessageBox myMessageBox = new MessageBox(shlIfreischaltung, SWT.ICON_INFORMATION | SWT.OK);

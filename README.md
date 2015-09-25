@@ -5,4 +5,6 @@ This is the client for a ucas. It can communicate with the ucas-server by readin
 
 DEPRECATED: check for a hardcoded fauids permissions
 DONE: change the fauid we work with from being hardcoded to being read by a cardreader
-TODO: blink a led should the user have sufficient permissions
+DONE: blink a led should the user have sufficient permissions
+
+TODO: Do some testing. Were ready for Alpha 0.1 :-)
