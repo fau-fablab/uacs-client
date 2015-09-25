@@ -33,6 +33,27 @@ public class myClientGui {
 	 * 
 	 * @param args
 	 */
+	private void threadInit() {
+		// taken from
+		// http://wiki.eclipse.org/FAQ_Why_do_I_get_an_invalid_thread_access_exception%3F
+
+		new Thread(new Runnable() {
+			public void run() {
+				while (running == true) {
+					try {
+						Thread.sleep(500);
+					} catch (Exception e) {
+					}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							doStuff();
+						}
+					});
+				}
+			}
+		}).start();
+	}
+	
 	public static void main(String[] args) {
 		try {
 			Runtime.getRuntime().exec("sudo gpio mode 0 out");
@@ -53,6 +74,16 @@ public class myClientGui {
 		running = true;
 		shlIfreischaltung.open();
 		shlIfreischaltung.layout();
+		client = new myclient("Laser");
+		if (client.getError() == true) {
+			MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+					SWT.ICON_INFORMATION | SWT.OK);
+			myMessageBox.setMessage("Your machine does not exist (yet). Closing.");
+			myMessageBox.open();
+			System.exit(0);
+		}
+		Devicename.setText(client.getDevice());
+		threadInit();
 		while (!shlIfreischaltung.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -68,6 +99,13 @@ public class myClientGui {
 	 */
 	public void doStuff() {
 		if (client != null) {
+			if (!client.getActive()) {
+				MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+						SWT.ICON_INFORMATION | SWT.OK);
+				myMessageBox.setMessage("Machine is inactive. Talk to a Betreuer");
+				myMessageBox.open();
+				System.exit(0);
+			}
 			myuser = new currentuser("13917", client.getDevice());
 			Color myred = new Color(null, 255, 0, 0);
 			Color mygreen = new Color(null, 0, 240, 0);
@@ -135,8 +173,7 @@ public class myClientGui {
 		btnSetMachine.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				client = new myclient("Laser");
-				Devicename.setText(client.getDevice());
+				
 			}
 		});
 		btnSetMachine.setBounds(27, 31, 190, 64);
@@ -151,24 +188,7 @@ public class myClientGui {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 
-				// taken from
-				// http://wiki.eclipse.org/FAQ_Why_do_I_get_an_invalid_thread_access_exception%3F
-
-				new Thread(new Runnable() {
-					public void run() {
-						while (running == true) {
-							try {
-								Thread.sleep(500);
-							} catch (Exception e) {
-							}
-							Display.getDefault().asyncExec(new Runnable() {
-								public void run() {
-									doStuff();
-								}
-							});
-						}
-					}
-				}).start();
+				
 			}
 		});
 		btnGetpermissions.setBounds(27, 142, 190, 65);

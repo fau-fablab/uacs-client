@@ -8,7 +8,10 @@ DONE: change the fauid we work with from being hardcoded to being read by a card
 DONE: blink a led should the user have sufficient permissions
 DONE: spawn a thread checking the permissions every 0.5s
 DONE: quit the spawned thread in a sane way
+DONE: configfile system
+DONE: Spawn thread when running oncreate. This requires the configfile system to be up and running.
 
+TODO: Add POST
 TODO: Do some testing. Were ready for Alpha 0.1 :-)
-TODO: Spawn thread when running oncreate. This requires the configfile system to be up and running.
-TODO: configfile system
+
+
