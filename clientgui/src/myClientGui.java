@@ -12,8 +12,7 @@ import org.eclipse.swt.widgets.MessageBox; // this probably wont be needed in th
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
-import java.util.Timer;
-import java.util.TimerTask; // this should be done by using threads
+
 
 public class myClientGui {
 
@@ -24,8 +23,10 @@ public class myClientGui {
 	private Text ID;
 	private Text BetreuerBox;
 	private Text EinweisungBox;
-	
-	//final static GpioController gpio = GpioFactory.getInstance();
+
+	private boolean running;
+
+	// final static GpioController gpio = GpioFactory.getInstance();
 
 	/**
 	 * Launch the application.
@@ -49,6 +50,7 @@ public class myClientGui {
 	public void open() {
 		Display display = Display.getDefault();
 		createContents();
+		running = true;
 		shlIfreischaltung.open();
 		shlIfreischaltung.layout();
 		while (!shlIfreischaltung.isDisposed()) {
@@ -56,6 +58,9 @@ public class myClientGui {
 				display.sleep();
 			}
 		}
+		running = false;
+		// System.out.println("Number of Threads: " + Thread.activeCount());
+		// System.out.println("i am being closed");
 	}
 
 	/**
@@ -107,16 +112,18 @@ public class myClientGui {
 				}
 			}
 		} else {
-			MessageBox myMessageBox = new MessageBox(shlIfreischaltung, SWT.ICON_INFORMATION | SWT.OK);
+			MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+					SWT.ICON_INFORMATION | SWT.OK);
 			myMessageBox.setMessage("Select your machine first!");
 			myMessageBox.open();
 			// see
 			// http://www.programcreek.com/java-api-examples/org.eclipse.swt.widgets.MessageBox
-		}	
+		}
 	}
 
 	protected void createContents() {
-		shlIfreischaltung = new Shell(); // ~SWT.RESIZE) : renders window size fixed, but breaks our host window
+		shlIfreischaltung = new Shell(); // ~SWT.RESIZE) : renders window size
+											// fixed, but breaks our host window
 		shlIfreischaltung.setSize(450, 300);
 		shlIfreischaltung.setText("iMZS");
 
@@ -143,21 +150,25 @@ public class myClientGui {
 		btnGetpermissions.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-	
-				// taken from http://wiki.eclipse.org/FAQ_Why_do_I_get_an_invalid_thread_access_exception%3F
-				
+
+				// taken from
+				// http://wiki.eclipse.org/FAQ_Why_do_I_get_an_invalid_thread_access_exception%3F
+
 				new Thread(new Runnable() {
-				      public void run() {
-				         while (true) {
-				            try { Thread.sleep(500); } catch (Exception e) { }
-				            Display.getDefault().asyncExec(new Runnable() {
-				               public void run() {
-				                  doStuff();
-				               }
-				            });
-				         }
-				      }
-				   }).start();
+					public void run() {
+						while (running == true) {
+							try {
+								Thread.sleep(500);
+							} catch (Exception e) {
+							}
+							Display.getDefault().asyncExec(new Runnable() {
+								public void run() {
+									doStuff();
+								}
+							});
+						}
+					}
+				}).start();
 			}
 		});
 		btnGetpermissions.setBounds(27, 142, 190, 65);
