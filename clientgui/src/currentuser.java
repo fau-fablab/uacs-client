@@ -34,7 +34,7 @@ public class currentuser {
 		return this.error;
 	}
 
-	public String getcardid() {
+	private String getcardid() {
 		// partly taken from http://alvinalexander.com/java/edu/pj/pj010016
 		
 		// were running the getuid-pcsc tool from the command line to read the cardid from the cardreader
