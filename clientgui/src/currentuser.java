@@ -58,6 +58,7 @@ public class currentuser {
 			}
 
 			if (retstring.contains("SCard")) {
+				// all the cardreaders error messages will contain the string noted above.
 				return "error";
 			}
 
