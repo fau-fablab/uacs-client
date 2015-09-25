@@ -12,6 +12,9 @@ import org.eclipse.swt.widgets.MessageBox; // this probably wont be needed in th
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
+import java.util.Timer;
+import java.util.TimerTask; // this should be done by using threads
+
 public class myClientGui {
 
 	protected Shell shlIfreischaltung;
@@ -58,6 +61,60 @@ public class myClientGui {
 	/**
 	 * Create contents of the window.
 	 */
+	public void doStuff() {
+		if (client != null) {
+			myuser = new currentuser("13917", client.getDevice());
+			Color myred = new Color(null, 255, 0, 0);
+			Color mygreen = new Color(null, 0, 240, 0);
+			if (!myuser.getError()) {
+				ID.setText(myuser.getFauId());
+				if (myuser.getBetreuer()) {
+					BetreuerBox.setText("Betreuer");
+					BetreuerBox.setBackground(mygreen);
+				} else {
+					BetreuerBox.setText("kein Betreuer");
+					BetreuerBox.setBackground(myred);
+				}
+				if (myuser.getEinweisung()) {
+					EinweisungBox.setText("Eingewiesen");
+					EinweisungBox.setBackground(mygreen);
+					try {
+						Runtime.getRuntime().exec("sudo gpio write 0 1");
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				} else {
+					EinweisungBox.setText("nicht eingewiesen");
+					EinweisungBox.setBackground(myred);
+					try {
+						Runtime.getRuntime().exec("sudo gpio write 0 0");
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			} else {
+				EinweisungBox.setBackground(myred);
+				BetreuerBox.setBackground(myred);
+				EinweisungBox.setText("nicht eingewiesen");
+				BetreuerBox.setText("");
+				try {
+					Runtime.getRuntime().exec("sudo gpio write 0 0");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		} else {
+			MessageBox myMessageBox = new MessageBox(shlIfreischaltung, SWT.ICON_INFORMATION | SWT.OK);
+			myMessageBox.setMessage("Select your machine first!");
+			myMessageBox.open();
+			// see
+			// http://www.programcreek.com/java-api-examples/org.eclipse.swt.widgets.MessageBox
+		}	
+	}
+
 	protected void createContents() {
 		shlIfreischaltung = new Shell(); // ~SWT.RESIZE) : renders window size fixed, but breaks our host window
 		shlIfreischaltung.setSize(450, 300);
@@ -86,57 +143,21 @@ public class myClientGui {
 		btnGetpermissions.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (client != null) {
-					myuser = new currentuser("13917", client.getDevice());
-					Color myred = new Color(null, 255, 0, 0);
-					Color mygreen = new Color(null, 0, 240, 0);
-					if (!myuser.getError()) {
-						ID.setText(myuser.getFauId());
-						if (myuser.getBetreuer()) {
-							BetreuerBox.setText("Betreuer");
-							BetreuerBox.setBackground(mygreen);
-						} else {
-							BetreuerBox.setText("kein Betreuer");
-							BetreuerBox.setBackground(myred);
-						}
-						if (myuser.getEinweisung()) {
-							EinweisungBox.setText("Eingewiesen");
-							EinweisungBox.setBackground(mygreen);
-							try {
-								Runtime.getRuntime().exec("sudo gpio write 0 1");
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-						} else {
-							EinweisungBox.setText("nicht eingewiesen");
-							EinweisungBox.setBackground(myred);
-							try {
-								Runtime.getRuntime().exec("sudo gpio write 0 0");
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-						}
-					} else {
-						EinweisungBox.setBackground(myred);
-						BetreuerBox.setBackground(myred);
-						EinweisungBox.setText("nicht eingewiesen");
-						BetreuerBox.setText("");
-						try {
-							Runtime.getRuntime().exec("sudo gpio write 0 0");
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-				} else {
-					MessageBox myMessageBox = new MessageBox(shlIfreischaltung, SWT.ICON_INFORMATION | SWT.OK);
-					myMessageBox.setMessage("Select your machine first!");
-					myMessageBox.open();
-					// see
-					// http://www.programcreek.com/java-api-examples/org.eclipse.swt.widgets.MessageBox
-				}
+	
+				// taken from http://wiki.eclipse.org/FAQ_Why_do_I_get_an_invalid_thread_access_exception%3F
+				
+				new Thread(new Runnable() {
+				      public void run() {
+				         while (true) {
+				            try { Thread.sleep(500); } catch (Exception e) { }
+				            Display.getDefault().asyncExec(new Runnable() {
+				               public void run() {
+				                  doStuff();
+				               }
+				            });
+				         }
+				      }
+				   }).start();
 			}
 		});
 		btnGetpermissions.setBounds(27, 142, 190, 65);

@@ -18,6 +18,7 @@ public class currentuser {
 	private boolean einweisung = false;
 	private String fauid = "";
 	private boolean error;
+	private String cardid;
 
 	public boolean getBetreuer() {
 		return this.betreuer;
@@ -34,6 +35,10 @@ public class currentuser {
 	public boolean getError() {
 		return this.error;
 	}
+	
+	public String getCardId() {
+		return this.cardid;
+	}
 
 	private String getcardid() {
 		// partly taken from http://alvinalexander.com/java/edu/pj/pj010016
@@ -41,7 +46,9 @@ public class currentuser {
 		// were running the getuid-pcsc tool from the command line to read the cardid from the cardreader
 		
 		String s = null;
+		String t = null;
 		String retstring = "";
+		String errorstring = "";
 
 		try {
 			Process p = Runtime.getRuntime().exec("./getuid-pcsc");
@@ -55,11 +62,15 @@ public class currentuser {
 			// read the output from the command
 			if ((s = stdInput.readLine()) != null) {
 				retstring += s;
-
+			}
+			if ((t = stdError.readLine()) != null) {
+				errorstring += t;
 			}
 
-			if (retstring.contains("SCard")) {
-				// all the cardreaders error messages will contain the string noted above.
+
+			if (retstring.contains("SCard") || (errorstring.contains("APPLICATION_NOT_FOUND"))) {
+				// most of the cardreaders error messages will contain the string noted above.
+				// the reader will return "application not found" on stderr for tokens
 				return "error";
 			}
 
@@ -87,11 +98,11 @@ public class currentuser {
 	private void checkForEinweisung(String fauid, String Geraet) {
 		this.error = false;
 		try {
-			String myCardId = getcardid();
-			if (myCardId.equals("error") == false) {
+			this.cardid = getcardid();
+			if (this.cardid.equals("error") == false) {
 
 				String urlstring = "http://ws01:8000/users/";
-				urlstring += myCardId;
+				urlstring += this.cardid;
 				// System.out.println(urlstring);
 				URL myurl = new URL(urlstring);
 				InputStream is = myurl.openStream();
@@ -124,7 +135,7 @@ public class currentuser {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Either the fauid " + fauid
+			System.out.println("Either the cardid " + this.cardid
 					+ " is unknown or there is a problem with your network.");
 			this.error = true;
 		} catch (ParseException e) {
