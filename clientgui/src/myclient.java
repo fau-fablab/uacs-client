@@ -80,8 +80,8 @@ public class myclient {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Either the device " + this.Geraet
-					+ " is unknown or there is a problem with your network.");
+			// System.out.println("Either the device " + this.Geraet +
+			// " is unknown or there is a problem with your network.");
 			this.error = true;
 		} catch (ParseException e) {
 			e.printStackTrace();
