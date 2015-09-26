@@ -1,4 +1,21 @@
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -11,8 +28,6 @@ import org.eclipse.swt.widgets.MessageBox; // this probably wont be needed in th
 
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-
-
 
 public class myClientGui {
 
@@ -54,6 +69,65 @@ public class myClientGui {
 		}).start();
 	}
 	
+	private String convertStreamToString(java.io.InputStream is) {
+		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
+	}
+
+	private boolean giveFreischaltung(currentuser betreuer) throws IOException {
+		if (!betreuer.getBetreuer()) {
+			MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+					SWT.ICON_INFORMATION | SWT.OK);
+			myMessageBox.setMessage("Du bist kein Betreuer");
+			myMessageBox.open();
+			return false;
+		}
+		MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+				SWT.ICON_INFORMATION | SWT.OK);
+		myMessageBox.setMessage("Put the other card on the reader");
+		myMessageBox.open();
+
+
+		try {
+			//CloseableHttpClient httpclient = HttpClients.createDefault();
+			HttpClient httpclient = HttpClientBuilder.create().build();
+			HttpPost httppost = new HttpPost("http://ws01:8000/create/");
+
+			// Request parameters and other properties.
+			List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+			params.add(new BasicNameValuePair("requestingid", betreuer.getCardId()));
+			params.add(new BasicNameValuePair("requestedid", myuser.getCardId()));
+			params.add(new BasicNameValuePair("device", client.getDevice()));
+			HttpResponse response;
+			InputStream instream = null;
+			httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+			response = httpclient.execute(httppost);
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				instream = entity.getContent();
+				String mystring = convertStreamToString(instream);
+				System.out.println(mystring);
+				if (mystring.equals("done")) {
+					return true;
+				}
+			}
+			if (instream != null) {
+				instream.close();
+			}
+
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		return false;
+	}
+
 	public static void main(String[] args) {
 		try {
 			Runtime.getRuntime().exec("sudo gpio mode 0 out");
@@ -78,7 +152,8 @@ public class myClientGui {
 		if (client.getError() == true) {
 			MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
 					SWT.ICON_INFORMATION | SWT.OK);
-			myMessageBox.setMessage("Your machine does not exist (yet). Closing.");
+			myMessageBox
+					.setMessage("Your machine does not exist (yet). Closing.");
 			myMessageBox.open();
 			System.exit(0);
 		}
@@ -102,7 +177,8 @@ public class myClientGui {
 			if (!client.getActive()) {
 				MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
 						SWT.ICON_INFORMATION | SWT.OK);
-				myMessageBox.setMessage("Machine is inactive. Talk to a Betreuer");
+				myMessageBox
+						.setMessage("Machine is inactive. Talk to a Betreuer");
 				myMessageBox.open();
 				System.exit(0);
 			}
@@ -173,7 +249,7 @@ public class myClientGui {
 		btnSetMachine.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+
 			}
 		});
 		btnSetMachine.setBounds(27, 31, 190, 64);
@@ -187,7 +263,21 @@ public class myClientGui {
 		btnGetpermissions.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-
+				boolean worked;
+				try {
+					worked = giveFreischaltung(myuser);
+					MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+							SWT.ICON_INFORMATION | SWT.OK);
+					if (worked) {
+						myMessageBox.setMessage("success");
+					} else {
+						myMessageBox.setMessage("did not work :(");
+					}
+					myMessageBox.open();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 			}
 		});
