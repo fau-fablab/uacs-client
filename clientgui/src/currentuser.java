@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +9,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
 
 public class currentuser {
 
@@ -35,23 +33,24 @@ public class currentuser {
 	public boolean getError() {
 		return this.error;
 	}
-	
+
 	public String getCardId() {
 		return this.cardid;
 	}
 
 	private String getcardid() {
 		// partly taken from http://alvinalexander.com/java/edu/pj/pj010016
-		
-		// were running the getuid-pcsc tool from the command line to read the cardid from the cardreader
-		
+
+		// were running the getuid-pcsc tool from the command line to read the
+		// cardid from the cardreader
+
 		String s = null;
 		String t = null;
 		String retstring = "";
 		String errorstring = "";
 
 		try {
-			Process p = Runtime.getRuntime().exec("./getuid-pcsc");
+			Process p = Runtime.getRuntime().exec("getuid-pcsc");
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
@@ -67,10 +66,12 @@ public class currentuser {
 				errorstring += t;
 			}
 
-
-			if (retstring.contains("SCard") || (errorstring.contains("APPLICATION_NOT_FOUND"))) {
-				// most of the cardreaders error messages will contain the string noted above.
-				// the reader will return "application not found" on stderr for tokens
+			if (retstring.contains("SCard")
+					|| (errorstring.contains("APPLICATION_NOT_FOUND"))) {
+				// most of the cardreaders error messages will contain the
+				// string noted above.
+				// the reader will return "application not found" on stderr for
+				// tokens
 				return "error";
 			}
 
@@ -85,7 +86,7 @@ public class currentuser {
 
 		catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return ("error");
 		}
 	}
@@ -135,8 +136,8 @@ public class currentuser {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Either the cardid " + this.cardid
-					+ " is unknown or there is a problem with your network.");
+			// System.out.println("Either the cardid " + this.cardid +
+			// " is unknown or there is a problem with your network.");
 			this.error = true;
 		} catch (ParseException e) {
 			e.printStackTrace();

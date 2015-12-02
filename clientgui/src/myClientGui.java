@@ -128,6 +128,51 @@ public class myClientGui {
 		return false;
 	}
 
+	private boolean createUser() throws IOException {
+		try {
+			//CloseableHttpClient httpclient = HttpClients.createDefault();
+			HttpClient httpclient = HttpClientBuilder.create().build();
+			HttpPost httppost = new HttpPost("http://ws01:8000/newUser/");
+
+			// Request parameters and other properties.
+			List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+			params.add(new BasicNameValuePair("cardid", myuser.getCardId()));
+			HttpResponse response;
+			InputStream instream = null;
+			httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+			response = httpclient.execute(httppost);
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				instream = entity.getContent();
+				String mystring = convertStreamToString(instream);
+				System.out.println(mystring);
+				if (mystring.equals("done")) {
+					return true;
+				}
+				if (mystring.equals("error")) {
+					MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
+							SWT.ICON_INFORMATION | SWT.OK);
+					myMessageBox.setMessage("User already exists");
+					myMessageBox.open();
+					return false;
+				}
+			}
+			if (instream != null) {
+				instream.close();
+			}
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		return false;
+	}
+	
 	public static void main(String[] args) {
 		try {
 			Runtime.getRuntime().exec("sudo gpio mode 0 out");
@@ -148,6 +193,9 @@ public class myClientGui {
 		running = true;
 		shlIfreischaltung.open();
 		shlIfreischaltung.layout();
+		
+		//shlIfreischaltung.setFullScreen(true);
+		
 		client = new myclient("Laser");
 		if (client.getError() == true) {
 			MessageBox myMessageBox = new MessageBox(shlIfreischaltung,
@@ -238,29 +286,34 @@ public class myClientGui {
 	protected void createContents() {
 		shlIfreischaltung = new Shell(); // ~SWT.RESIZE) : renders window size
 											// fixed, but breaks our host window
-		shlIfreischaltung.setSize(450, 300);
+		shlIfreischaltung.setSize(800, 480);
 		shlIfreischaltung.setText("iMZS");
 
 		Devicename = new Text(shlIfreischaltung, SWT.BORDER);
 		Devicename.setEditable(false);
-		Devicename.setBounds(243, 31, 181, 21);
+		Devicename.setBounds(440, 50, 300, 60);
 
-		Button btnSetMachine = new Button(shlIfreischaltung, SWT.NONE);
-		btnSetMachine.addSelectionListener(new SelectionAdapter() {
+		Button btnCreateUser = new Button(shlIfreischaltung, SWT.NONE);
+		btnCreateUser.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-
+				try {
+					createUser();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
-		btnSetMachine.setBounds(27, 31, 190, 64);
-		btnSetMachine.setText("setMachine");
+		btnCreateUser.setBounds(60, 50, 300, 150);
+		btnCreateUser.setText("Nutzer anlegen");
 
 		ID = new Text(shlIfreischaltung, SWT.BORDER);
 		ID.setEditable(false);
-		ID.setBounds(243, 74, 181, 21);
+		ID.setBounds(440, 140, 300, 60);
 
-		Button btnGetpermissions = new Button(shlIfreischaltung, SWT.NONE);
-		btnGetpermissions.addSelectionListener(new SelectionAdapter() {
+		Button btnGivePermissions = new Button(shlIfreischaltung, SWT.NONE);
+		btnGivePermissions.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				boolean worked;
@@ -281,16 +334,16 @@ public class myClientGui {
 				
 			}
 		});
-		btnGetpermissions.setBounds(27, 142, 190, 65);
-		btnGetpermissions.setText("getPermissions");
+		btnGivePermissions.setBounds(60, 250, 300, 150);
+		btnGivePermissions.setText("Einweisung eintragen");
 
 		BetreuerBox = new Text(shlIfreischaltung, SWT.BORDER);
 		BetreuerBox.setEditable(false);
-		BetreuerBox.setBounds(243, 142, 181, 21);
+		BetreuerBox.setBounds(440, 250, 300, 60);
 
 		EinweisungBox = new Text(shlIfreischaltung, SWT.BORDER);
 		EinweisungBox.setEditable(false);
-		EinweisungBox.setBounds(243, 186, 181, 21);
+		EinweisungBox.setBounds(440, 340, 300, 60);
 
 	}
 }
