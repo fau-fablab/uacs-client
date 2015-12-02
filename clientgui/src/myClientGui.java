@@ -194,7 +194,7 @@ public class myClientGui {
 		shlIfreischaltung.open();
 		shlIfreischaltung.layout();
 		
-		//shlIfreischaltung.setFullScreen(true);
+		shlIfreischaltung.setFullScreen(true);
 		
 		client = new myclient("Laser");
 		if (client.getError() == true) {
